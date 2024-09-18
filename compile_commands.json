@@ -1,0 +1,22 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-Wall",
+      "-Wpedantic",
+      "-Werror",
+      "-std=c11",
+      "-Og",
+      "-ggdb",
+      "-fsanitize=address,undefined",
+      "-I/home/focusedxy/cs/my-own-lisp/mpc",
+      "-c",
+      "-o",
+      "/home/focusedxy/cs/my-own-lisp/build/obj//home/focusedxy/cs/my-own-lisp/src/main.o",
+      "/home/focusedxy/cs/my-own-lisp/src/main.c"
+    ],
+    "directory": "/home/focusedxy/cs/my-own-lisp",
+    "file": "/home/focusedxy/cs/my-own-lisp/src/main.c",
+    "output": "/home/focusedxy/cs/my-own-lisp/build/obj/home/focusedxy/cs/my-own-lisp/src/main.o"
+  }
+]
