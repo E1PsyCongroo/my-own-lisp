@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <clisp.h>
 #include <editline/history.h>
 #include <editline/readline.h>
-#include <lval.h>
 #include <mpc.h>
 
 int main(int argc, char **argv) {
@@ -12,24 +12,27 @@ int main(int argc, char **argv) {
   mpc_parser_t *Number = mpc_new("number");
   mpc_parser_t *Symbol = mpc_new("symbol");
   mpc_parser_t *Sexpr = mpc_new("sexpr");
+  mpc_parser_t *Qexpr = mpc_new("qexpr");
   mpc_parser_t *Expr = mpc_new("expr");
   mpc_parser_t *Lispy = mpc_new("lispy");
 
-  mpca_lang(MPCA_LANG_DEFAULT, "                                          \
-      number : /-?[0-9]+/ ;                    \
-      symbol : '+' | '-' | '*' | '/' ;         \
-      sexpr  : '(' <expr>* ')' ;               \
-      expr   : <number> | <symbol> | <sexpr> ; \
-      lispy  : /^/ <expr>* /$/ ;               \
+  mpca_lang(MPCA_LANG_DEFAULT,
+            "                                                     \
+              number : /-?[0-9]+/ ;                               \
+              symbol : \"list\" | \"head\" | \"tail\"             \
+              | \"join\" | \"eval\" | '+' | '-' | '*' | '/' ;     \
+              sexpr  : '(' <expr>* ')' ;                          \
+              qexpr  : '{' <expr>* '}' ;                          \
+              expr   : <number> | <symbol> | <sexpr> | <qexpr> ;  \
+              lispy  : /^/ <sexpr>* /$/ ;                         \
     ",
-            Number, Symbol, Sexpr, Expr, Lispy);
+            Number, Symbol, Sexpr, Qexpr, Expr, Lispy);
 
   puts("Lispy Version 0.0.0.0.5");
   puts("Press Ctrl+c to Exit\n");
 
-  while (1) {
-
-    char *input = readline("lispy> ");
+  char *input = NULL;
+  while ((input = readline("lispy> "))) {
     add_history(input);
 
     mpc_result_t r;
@@ -47,7 +50,8 @@ int main(int argc, char **argv) {
     free(input);
   }
 
-  mpc_cleanup(5, Number, Symbol, Sexpr, Expr, Lispy);
+  putchar('\n');
+  mpc_cleanup(6, Number, Symbol, Sexpr, Qexpr, Expr, Lispy);
 
   return 0;
 }
