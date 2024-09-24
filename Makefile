@@ -17,7 +17,7 @@ LIBS      := $(MPC_DIR)/build/libmpc.so
 INCLUDES  := $(addprefix -I, $(INC_PATH))
 CC        := clang
 LD        := clang
-CFLAGS    := -MMD -Wall -Wpedantic -Werror -std=c11 -Og -ggdb -fsanitize=address,undefined $(INCLUDES)
+CFLAGS    := -MMD -Wall -Wpedantic -Werror -std=c11 -Og -ggdb -gdwarf-4 -fsanitize=address,undefined $(INCLUDES)
 LDFLAGS   := $(CFLAGS) -ledit -lm
 
 # Compilation patterns
@@ -39,6 +39,10 @@ $(BINARY): $(OBJS)
 run: app
 	@echo RUN $(BINARY)
 	@$(BINARY)
+
+valgrind: app
+	@echo RUN $(BINARY) with valgrind
+	@valgrind $(BINARY)
 
 clean:
 	@$(MAKE) -C $(MPC_DIR) clean

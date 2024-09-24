@@ -40,6 +40,7 @@ lval *lval_sexpr(void);
 lval *lval_qexpr(void);
 lval *lval_read_num(mpc_ast_t *t);
 lval *lval_add(lval *v, lval *x);
+lval *lval_add_front(lval *v, lval *x);
 
 lval *lval_pop(lval *v, int i);
 lval *lval_take(lval *v, int i);
@@ -51,6 +52,9 @@ lval *builtin_list(lval *a);
 lval *builtin_eval(lval *a);
 lval *lval_join(lval *x, lval *y);
 lval *builtin_join(lval *a);
+lval *builtin_cons(lval *a);
+lval *builtin_len(lval *a);
+lval *builtin_init(lval *a);
 lval *builtin_op(lval *a, char *op);
 lval *builtin(lval *a, char *func);
 

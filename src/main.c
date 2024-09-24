@@ -19,8 +19,9 @@ int main(int argc, char **argv) {
   mpca_lang(MPCA_LANG_DEFAULT,
             "                                                     \
               number : /-?[0-9]+/ ;                               \
-              symbol : \"list\" | \"head\" | \"tail\"             \
-              | \"join\" | \"eval\" | '+' | '-' | '*' | '/' ;     \
+              symbol : \"list\" | \"head\" | \"tail\" | \"join\"  \
+              | \"eval\" | \"cons\" | \"len\" | \"init\"          \
+              |'+' | '-' | '*' | '/' ;                            \
               sexpr  : '(' <expr>* ')' ;                          \
               qexpr  : '{' <expr>* '}' ;                          \
               expr   : <number> | <symbol> | <sexpr> | <qexpr> ;  \
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
     ",
             Number, Symbol, Sexpr, Qexpr, Expr, Lispy);
 
-  puts("Lispy Version 0.0.0.0.5");
+  puts("Lispy Version 0.0.0.0.6");
   puts("Press Ctrl+c to Exit\n");
 
   char *input = NULL;

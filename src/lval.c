@@ -89,6 +89,16 @@ lval *lval_add(lval *v, lval *x) {
   return v;
 }
 
+lval *lval_add_front(lval *v, lval *x) {
+  v->count++;
+  v->cell = realloc(v->cell, sizeof(lval *) * v->count);
+  for (int i = v->count - 1; i > 0; i--) {
+    v->cell[i] = v->cell[i - 1];
+  }
+  v->cell[0] = x;
+  return v;
+}
+
 lval *lval_read(mpc_ast_t *t) {
   /* If Symbol or Number return conversion to that type */
   if (strstr(t->tag, "number")) {
