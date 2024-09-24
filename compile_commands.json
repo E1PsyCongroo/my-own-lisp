@@ -3,11 +3,32 @@
     "arguments": [
       "/usr/bin/clang",
       "-Wall",
-      "-Wpedantic",
       "-Werror",
       "-std=c11",
       "-Og",
       "-ggdb",
+      "-gdwarf-4",
+      "-fsanitize=address,undefined",
+      "-I/home/focused_xy/my-own-lisp/include",
+      "-I/home/focused_xy/my-own-lisp/mpc",
+      "-c",
+      "-o",
+      "/home/focused_xy/my-own-lisp/build/obj//home/focused_xy/my-own-lisp/src/lenv.o",
+      "/home/focused_xy/my-own-lisp/src/lenv.c"
+    ],
+    "directory": "/home/focused_xy/my-own-lisp",
+    "file": "/home/focused_xy/my-own-lisp/src/lenv.c",
+    "output": "/home/focused_xy/my-own-lisp/build/obj/home/focused_xy/my-own-lisp/src/lenv.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-Wall",
+      "-Werror",
+      "-std=c11",
+      "-Og",
+      "-ggdb",
+      "-gdwarf-4",
       "-fsanitize=address,undefined",
       "-I/home/focused_xy/my-own-lisp/include",
       "-I/home/focused_xy/my-own-lisp/mpc",
@@ -24,11 +45,53 @@
     "arguments": [
       "/usr/bin/clang",
       "-Wall",
-      "-Wpedantic",
       "-Werror",
       "-std=c11",
       "-Og",
       "-ggdb",
+      "-gdwarf-4",
+      "-fsanitize=address,undefined",
+      "-I/home/focused_xy/my-own-lisp/include",
+      "-I/home/focused_xy/my-own-lisp/mpc",
+      "-c",
+      "-o",
+      "/home/focused_xy/my-own-lisp/build/obj//home/focused_xy/my-own-lisp/src/eval.o",
+      "/home/focused_xy/my-own-lisp/src/eval.c"
+    ],
+    "directory": "/home/focused_xy/my-own-lisp",
+    "file": "/home/focused_xy/my-own-lisp/src/eval.c",
+    "output": "/home/focused_xy/my-own-lisp/build/obj/home/focused_xy/my-own-lisp/src/eval.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-Wall",
+      "-Werror",
+      "-std=c11",
+      "-Og",
+      "-ggdb",
+      "-gdwarf-4",
+      "-fsanitize=address,undefined",
+      "-I/home/focused_xy/my-own-lisp/include",
+      "-I/home/focused_xy/my-own-lisp/mpc",
+      "-c",
+      "-o",
+      "/home/focused_xy/my-own-lisp/build/obj//home/focused_xy/my-own-lisp/src/debug.o",
+      "/home/focused_xy/my-own-lisp/src/debug.c"
+    ],
+    "directory": "/home/focused_xy/my-own-lisp",
+    "file": "/home/focused_xy/my-own-lisp/src/debug.c",
+    "output": "/home/focused_xy/my-own-lisp/build/obj/home/focused_xy/my-own-lisp/src/debug.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-Wall",
+      "-Werror",
+      "-std=c11",
+      "-Og",
+      "-ggdb",
+      "-gdwarf-4",
       "-fsanitize=address,undefined",
       "-I/home/focused_xy/my-own-lisp/include",
       "-I/home/focused_xy/my-own-lisp/mpc",
@@ -40,6 +103,27 @@
     "directory": "/home/focused_xy/my-own-lisp",
     "file": "/home/focused_xy/my-own-lisp/src/lval.c",
     "output": "/home/focused_xy/my-own-lisp/build/obj/home/focused_xy/my-own-lisp/src/lval.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-Wall",
+      "-Werror",
+      "-std=c11",
+      "-Og",
+      "-ggdb",
+      "-gdwarf-4",
+      "-fsanitize=address,undefined",
+      "-I/home/focused_xy/my-own-lisp/include",
+      "-I/home/focused_xy/my-own-lisp/mpc",
+      "-c",
+      "-o",
+      "/home/focused_xy/my-own-lisp/build/obj//home/focused_xy/my-own-lisp/src/builtin.o",
+      "/home/focused_xy/my-own-lisp/src/builtin.c"
+    ],
+    "directory": "/home/focused_xy/my-own-lisp",
+    "file": "/home/focused_xy/my-own-lisp/src/builtin.c",
+    "output": "/home/focused_xy/my-own-lisp/build/obj/home/focused_xy/my-own-lisp/src/builtin.o"
   },
   {
     "arguments": [

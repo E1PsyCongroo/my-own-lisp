@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "local-include/common.h"
+#include "local-include/lenv.h"
 #include "local-include/lval.h"
 #include <clisp.h>
 #include <mpc.h>
@@ -27,11 +29,10 @@ lval *lval_take(lval *v, int i) {
   return x;
 }
 
-lval *lval_eval_sexpr(lval *v) {
-
+lval *lval_eval_sexpr(lenv *e, lval *v) {
   /* Evaluate Children */
   for (int i = 0; i < v->count; i++) {
-    v->cell[i] = lval_eval(v->cell[i]);
+    v->cell[i] = lval_eval(e, v->cell[i]);
   }
   /* Error Checking */
   for (int i = 0; i < v->count; i++) {
@@ -45,26 +46,37 @@ lval *lval_eval_sexpr(lval *v) {
   }
   /* Single Expression */
   if (v->count == 1) {
-    return lval_take(v, 0);
+    lval *f = lval_pop(v, 0);
+    if (f->type == LVAL_FUN) {
+      lval *result = f->fun(e, v);
+      lval_del(f);
+      return result;
+    } else {
+      lval_del(v);
+      return f;
+    }
   }
   /* Ensure First Element is Symbol */
   lval *f = lval_pop(v, 0);
-  if (f->type != LVAL_SYM) {
-    lval_del(f);
+  if (f->type != LVAL_FUN) {
     lval_del(v);
-    return lval_err("S-expression Does not start with symbol!");
+    lval_del(f);
+    return lval_err("first element is not a function");
   }
   /* Call builtin with operator */
-  lval *result = builtin(v, f->sym);
+  lval *result = f->fun(e, v);
   lval_del(f);
   return result;
 }
 
-lval *lval_eval(lval *v) {
-  /* Evaluate Sexpressions */
-  if (v->type == LVAL_SEXPR) {
-    return lval_eval_sexpr(v);
+lval *lval_eval(lenv *e, lval *v) {
+  if (v->type == LVAL_SYM) {
+    lval *x = lenv_get(e, v);
+    lval_del(v);
+    return x;
   }
-  /* All other lval types remain the same */
+  if (v->type == LVAL_SEXPR) {
+    return lval_eval_sexpr(e, v);
+  }
   return v;
 }

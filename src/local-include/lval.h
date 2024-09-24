@@ -1,63 +1,51 @@
 #ifndef __LVAL_H__
 #define __LVAL_H__
 
+#include "common.h"
 #include <mpc.h>
 
-/* Create Enumeration of Possible lval Types */
-enum { LVAL_ERR, LVAL_NUM, LVAL_SYM, LVAL_SEXPR, LVAL_QEXPR };
-
-/* Create Enumeration of Possible Error Types */
-enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
-
-/* Declare New lval Struct */
-typedef struct lval {
-  int type;
-  union {
-    long num;
-    /* Error and Symbol types have some string data */
-    char *err;
-    char *sym;
-    struct {
-      /* Count and Pointer to a list of "lval*" */
-      int count;
-      struct lval **cell;
-    };
-  };
-} lval;
-
-#define LASSERT(args, cond, err)                                               \
-  do                                                                           \
+#define LASSERT(args, cond, fmt, ...)                                          \
+  do {                                                                         \
     if (!(cond)) {                                                             \
+      lval *err = lval_err(fmt, ##__VA_ARGS__);                                \
       lval_del(args);                                                          \
-      return lval_err(err);                                                    \
+      return err;                                                              \
     }                                                                          \
-  while (0)
+  } while (0)
 
 lval *lval_num(long x);
-lval *lval_err(char *m);
+lval *lval_err(char *fmt, ...);
 lval *lval_sym(char *s);
 lval *lval_sexpr(void);
 lval *lval_qexpr(void);
+lval *lval_fun(lbuiltin func);
 lval *lval_read_num(mpc_ast_t *t);
 lval *lval_add(lval *v, lval *x);
 lval *lval_add_front(lval *v, lval *x);
+lval *lval_copy(lval *v);
 
 lval *lval_pop(lval *v, int i);
 lval *lval_take(lval *v, int i);
-lval *lval_eval_sexpr(lval *v);
+lval *lval_eval_sexpr(lenv *e, lval *v);
 
-lval *builtin_head(lval *a);
-lval *builtin_tail(lval *a);
-lval *builtin_list(lval *a);
-lval *builtin_eval(lval *a);
+lval *builtin_head(lenv *e, lval *a);
+lval *builtin_tail(lenv *e, lval *a);
+lval *builtin_list(lenv *e, lval *a);
+lval *builtin_eval(lenv *e, lval *a);
 lval *lval_join(lval *x, lval *y);
-lval *builtin_join(lval *a);
-lval *builtin_cons(lval *a);
-lval *builtin_len(lval *a);
-lval *builtin_init(lval *a);
-lval *builtin_op(lval *a, char *op);
-lval *builtin(lval *a, char *func);
+lval *builtin_join(lenv *e, lval *a);
+lval *builtin_cons(lenv *e, lval *a);
+lval *builtin_len(lenv *e, lval *a);
+lval *builtin_init(lenv *e, lval *a);
+lval *builtin_op(lenv *e, lval *a, char *op);
+lval *builtin_add(lenv *e, lval *a);
+lval *builtin_sub(lenv *e, lval *a);
+lval *builtin_mul(lenv *e, lval *a);
+lval *builtin_div(lenv *e, lval *a);
+lval *builtin_def(lenv *e, lval *a);
+lval *builtin_exit(lenv *e, lval *a);
 
-void lval_expr_print(lval *v, char open, char close);
+char *ltype_name(int t);
+void lval_expr_print(lenv *e, lval *v, char open, char close);
 
 #endif

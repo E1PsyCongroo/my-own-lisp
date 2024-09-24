@@ -15,11 +15,26 @@ lval *lval_num(long x) {
 }
 
 /* Construct a pointer to a new Error lval */
-lval *lval_err(char *m) {
+lval *lval_err(char *fmt, ...) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_ERR;
-  v->err = malloc(strlen(m) + 1);
-  strcpy(v->err, m);
+
+  /* Create a va list and initialize it */
+  va_list va;
+  va_start(va, fmt);
+
+  /* Allocate 512 bytes of space */
+  v->err = malloc(512);
+
+  /* printf the error string with a maximum of 511 characters */
+  vsnprintf(v->err, 511, fmt, va);
+
+  /* Reallocate to number of bytes actually used */
+  v->err = realloc(v->err, strlen(v->err) + 1);
+
+  /* Cleanup our va list */
+  va_end(va);
+
   return v;
 }
 
@@ -32,7 +47,7 @@ lval *lval_sym(char *s) {
   return v;
 }
 
-/* A pointer to a new empty Sexpr lval */
+/* Construct a pointer to a new empty Sexpr lval */
 lval *lval_sexpr(void) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_SEXPR;
@@ -41,7 +56,7 @@ lval *lval_sexpr(void) {
   return v;
 }
 
-/* A pointer to a new empty Sexpr lval */
+/* Construct a pointer to a new empty Qexpr lval */
 lval *lval_qexpr(void) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_QEXPR;
@@ -50,10 +65,54 @@ lval *lval_qexpr(void) {
   return v;
 }
 
+/* Construct a pointer to a new Function lval */
+lval *lval_fun(lbuiltin func) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_FUN;
+  v->fun = func;
+  return v;
+}
+
+lval *lval_copy(lval *v) {
+  lval *x = malloc(sizeof(lval));
+  x->type = v->type;
+
+  switch (v->type) {
+  /* Copy Functions and Numbers Directly */
+  case LVAL_FUN:
+    x->fun = v->fun;
+    break;
+  case LVAL_NUM:
+    x->num = v->num;
+    break;
+  /* Copy Strings using malloc and strcpy */
+  case LVAL_ERR:
+    x->err = malloc(strlen(v->err) + 1);
+    strcpy(x->err, v->err);
+    break;
+  case LVAL_SYM:
+    x->sym = malloc(strlen(v->sym) + 1);
+    strcpy(x->sym, v->sym);
+    break;
+  /* Copy Lists by copying each sub-expression */
+  case LVAL_SEXPR:
+  case LVAL_QEXPR:
+    x->count = v->count;
+    x->cell = malloc(sizeof(lval *) * x->count);
+    for (int i = 0; i < x->count; i++) {
+      x->cell[i] = lval_copy(v->cell[i]);
+    }
+    break;
+  }
+
+  return x;
+}
+
 void lval_del(lval *v) {
   switch (v->type) {
-  /* Do nothing special for number type */
+  /* Do nothing special for number&function type */
   case LVAL_NUM:
+  case LVAL_FUN:
     break;
   /* For Err or Sym free the string data */
   case LVAL_ERR:
