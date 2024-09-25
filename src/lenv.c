@@ -38,6 +38,8 @@ char *lenv_get_builtin_name(lenv *e, lval *k) {
         return e->syms[i];
       }
     }
+  } else {
+    return "not builtin function";
   }
   return "unknown";
 }
@@ -143,6 +145,12 @@ void lenv_add_builtins(lenv *e) {
       {"<", builtin_lt},
       {">=", builtin_ge},
       {"<=", builtin_le},
+      {"and", builtin_and},
+      {"&&", builtin_and},
+      {"or", builtin_or},
+      {"||", builtin_or},
+      {"not", builtin_not},
+      {"!", builtin_not},
   };
   const int builtin_count = (sizeof builtins) / (sizeof builtins[0]);
   for (int i = 0; i < builtin_count; i++) {

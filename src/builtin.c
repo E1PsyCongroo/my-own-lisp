@@ -286,6 +286,30 @@ lval *builtin_cmp(lenv *e, lval *a, char *op) {
 lval *builtin_eq(lenv *e, lval *a) { return builtin_cmp(e, a, "=="); }
 lval *builtin_ne(lenv *e, lval *a) { return builtin_cmp(e, a, "!="); }
 
+lval *builtin_logic(lenv *e, lval *a, char *op) {
+  LASSERT_NUM(op, a, 2);
+  LASSERT_TYPE(op, a, 0, LVAL_NUM);
+  LASSERT_TYPE(op, a, 1, LVAL_NUM);
+  int r;
+  if (strcmp(op, "&&") == 0) {
+    r = (a->cell[0]->num && a->cell[1]->num);
+  }
+  if (strcmp(op, "||") == 0) {
+    r = (a->cell[0]->num || a->cell[1]->num);
+  }
+  lval_del(a);
+  return lval_num(r);
+}
+lval *builtin_and(lenv *e, lval *a) { return builtin_logic(e, a, "&&"); }
+lval *builtin_or(lenv *e, lval *a) { return builtin_logic(e, a, "||"); }
+lval *builtin_not(lenv *e, lval *a) {
+  LASSERT_NUM("not", a, 1);
+  LASSERT_TYPE("not", a, 0, LVAL_NUM);
+  lval *x = lval_num(!a->cell[0]->num);
+  lval_del(a);
+  return x;
+}
+
 lval *builtin_if(lenv *e, lval *a) {
   LASSERT_NUM("if", a, 3);
   LASSERT_TYPE("if", a, 0, LVAL_NUM);

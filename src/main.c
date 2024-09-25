@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   mpca_lang(MPCA_LANG_DEFAULT,
             "                                                     \
               number : /-?[0-9]+/ ;                               \
-              symbol : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&]+/ ;         \
+              symbol : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&|]+/ ;        \
               sexpr  : '(' <expr>* ')' ;                          \
               qexpr  : '{' <expr>* '}' ;                          \
               expr   : <number> | <symbol> | <sexpr> | <qexpr> ;  \
@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
 
     mpc_result_t r;
     if (mpc_parse("<stdin>", input, Lispy, &r)) {
-      // mpc_ast_print(r.output);
+      mpc_ast_print(r.output);
       lval *x = lval_eval(e, lval_read(r.output));
-      // lenv_print(e);
+      lenv_print(e);
       lval_println(e, x);
       lval_del(x);
       mpc_ast_delete(r.output);
