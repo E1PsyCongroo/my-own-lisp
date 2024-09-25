@@ -9,15 +9,12 @@
 #include <mpc.h>
 
 lval *builtin_head(lenv *e, lval *a) {
-  /* Check Error Conditions */
   LASSERT_NUM("head", a, 1);
   LASSERT_TYPE("head", a, 0, LVAL_QEXPR);
   LASSERT_NOT_EMPTY("head", a, 0);
 
-  /* Otherwise take first argument */
   lval *v = lval_take(a, 0);
 
-  /* Delete all elements that are not head and return */
   while (v->count > 1) {
     lval_del(lval_pop(v, 1));
   }
@@ -25,15 +22,12 @@ lval *builtin_head(lenv *e, lval *a) {
 }
 
 lval *builtin_tail(lenv *e, lval *a) {
-  /* Check Error Conditions */
   LASSERT_NUM("tail", a, 1);
   LASSERT_TYPE("tail", a, 0, LVAL_QEXPR);
   LASSERT_NOT_EMPTY("tail", a, 0);
 
-  /* Take first argument */
   lval *v = lval_take(a, 0);
 
-  /* Delete first element and return */
   lval_del(lval_pop(v, 0));
   return v;
 }
@@ -115,15 +109,12 @@ lval *builtin_var(lenv *e, lval *a, char *func) {
           func, syms->count, a->count - 1);
 
   for (int i = 0; i < syms->count; i++) {
-    /* If 'def' | 'fun' define in globally. If 'put' define in locally */
     if (strcmp(func, "def") == 0) {
       lenv_def(e, syms->cell[i], a->cell[i + 1]);
     }
-
     if (strcmp(func, "fun") == 0) {
       lenv_def(e, syms->cell[i], a->cell[i + 1]);
     }
-
     if (strcmp(func, "=") == 0) {
       lenv_put(e, syms->cell[i], a->cell[i + 1]);
     }
@@ -138,17 +129,14 @@ lval *builtin_def(lenv *e, lval *a) { return builtin_var(e, a, "def"); }
 lval *builtin_put(lenv *e, lval *a) { return builtin_var(e, a, "="); }
 
 lval *builtin_lambda(lenv *e, lval *a) {
-  /* Check Two arguments, each of which are Q-Expressions */
   LASSERT_NUM("\\", a, 2);
   LASSERT_TYPE("\\", a, 0, LVAL_QEXPR);
   LASSERT_TYPE("\\", a, 1, LVAL_QEXPR);
 
-  /* Check first Q-Expression contains only Symbols */
   for (int i = 0; i < a->cell[0]->count; i++) {
     LASSERT_TYPE("\\", a->cell[0], i, LVAL_SYM);
   }
 
-  /* Pop first two arguments and pass them to lval_lambda */
   lval *formals = lval_pop(a, 0);
   lval *body = lval_pop(a, 0);
   lval_del(a);
@@ -157,17 +145,14 @@ lval *builtin_lambda(lenv *e, lval *a) {
 }
 
 lval *builtin_fun(lenv *e, lval *a) {
-  /* Check Two arguments, each of which are Q-Expressions */
   LASSERT_NUM("\\", a, 2);
   LASSERT_TYPE("\\", a, 0, LVAL_QEXPR);
   LASSERT_TYPE("\\", a, 1, LVAL_QEXPR);
 
-  /* Check first Q-Expression contains only Symbols */
   for (int i = 0; i < a->cell[0]->count; i++) {
     LASSERT_TYPE("\\", a->cell[0], i, LVAL_SYM);
   }
 
-  /* Pop first two arguments and pass them to lval_lambda */
   lval *formals = lval_pop(a, 0);
   LASSERT(formals, formals->count > 1,
           "Function '%s' passed incorrect number of symbols. "
@@ -196,7 +181,6 @@ lval *builtin_exit(lenv *e, lval *a) {
 }
 
 lval *builtin_op(lenv *e, lval *a, char *op) {
-  /* Ensure all arguments are numbers */
   for (int i = 0; i < a->count; i++) {
     if (a->cell[i]->type != LVAL_NUM) {
       lval_del(a);
@@ -204,16 +188,12 @@ lval *builtin_op(lenv *e, lval *a, char *op) {
     }
   }
 
-  /* Pop the first element */
   lval *x = lval_pop(a, 0);
-  /* If no arguments and sub then perform unary negation */
   if ((strcmp(op, "-") == 0) && a->count == 0) {
     x->num = -x->num;
   }
 
-  /* While there are still elements remaining */
   while (a->count > 0) {
-    /* Pop the next element */
     lval *y = lval_pop(a, 0);
     if (strcmp(op, "+") == 0) {
       x->num += y->num;
@@ -316,20 +296,16 @@ lval *builtin_if(lenv *e, lval *a) {
   LASSERT_TYPE("if", a, 1, LVAL_QEXPR);
   LASSERT_TYPE("if", a, 2, LVAL_QEXPR);
 
-  /* Mark Both Expressions as evaluable */
   lval *x;
   a->cell[1]->type = LVAL_SEXPR;
   a->cell[2]->type = LVAL_SEXPR;
 
   if (a->cell[0]->num) {
-    /* If condition is true evaluate first expression */
     x = lval_eval(e, lval_pop(a, 1));
   } else {
-    /* Otherwise evaluate second expression */
     x = lval_eval(e, lval_pop(a, 2));
   }
 
-  /* Delete argument list and return */
   lval_del(a);
   return x;
 }

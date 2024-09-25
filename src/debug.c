@@ -29,9 +29,7 @@ char *ltype_name(int t) {
 void lval_expr_print(lenv *e, lval *v, char open, char close) {
   putchar(open);
   for (int i = 0; i < v->count; i++) {
-    /* Print Value contained within */
     lval_print(e, v->cell[i]);
-    /* Don't print trailing space if last element */
     if (i != (v->count - 1)) {
       putchar(' ');
     }

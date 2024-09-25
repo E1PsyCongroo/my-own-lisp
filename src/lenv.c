@@ -51,7 +51,6 @@ lval *lenv_get(lenv *e, lval *k) {
     }
   }
 
-  /* If no symbol check in parent otherwise error */
   if (e->par) {
     return lenv_get(e->par, k);
   } else {
@@ -60,11 +59,7 @@ lval *lenv_get(lenv *e, lval *k) {
 }
 
 void lenv_put(lenv *e, lval *k, lval *v) {
-  /* Iterate over all items in environment */
-  /* This is to see if variable already exists */
   for (int i = 0; i < e->count; i++) {
-    /* If variable is found delete item at that position */
-    /* And replace with variable supplied by user */
     if (strcmp(e->syms[i], k->sym) == 0) {
       lval_del(e->vals[i]);
       e->vals[i] = lval_copy(v);
@@ -72,22 +67,19 @@ void lenv_put(lenv *e, lval *k, lval *v) {
     }
   }
 
-  /* If no existing entry found allocate space for new entry */
   e->count++;
   e->vals = realloc(e->vals, sizeof(lval *) * e->count);
   e->syms = realloc(e->syms, sizeof(char *) * e->count);
-  /* Copy contents of lval and symbol string into new location */
+
   e->vals[e->count - 1] = lval_copy(v);
   e->syms[e->count - 1] = malloc(strlen(k->sym) + 1);
   strcpy(e->syms[e->count - 1], k->sym);
 }
 
 void lenv_def(lenv *e, lval *k, lval *v) {
-  /* Iterate till e has no parent */
   while (e->par) {
     e = e->par;
   }
-  /* Put value in e */
   lenv_put(e, k, v);
 }
 
