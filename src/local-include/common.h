@@ -22,20 +22,26 @@ typedef struct lval {
     /* Error and Symbol types have some string data */
     char *err;
     char *sym;
-    lbuiltin fun;
     struct {
       /* Count and Pointer to a list of "lval*" */
       int count;
       struct lval **cell;
     };
+    struct {
+      lbuiltin builtin;
+      lenv *env;
+      lval *formals;
+      lval *body;
+    };
   };
 } lval;
 
 /* Declare New lenv Struct */
-typedef struct lenv {
+struct lenv {
+  lenv *par;
   int count;
   char **syms;
   lval **vals;
-} lenv;
+};
 
 #endif

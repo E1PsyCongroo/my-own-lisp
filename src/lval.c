@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "local-include/lenv.h"
 #include "local-include/lval.h"
 #include <clisp.h>
 #include <mpc.h>
@@ -69,7 +70,17 @@ lval *lval_qexpr(void) {
 lval *lval_fun(lbuiltin func) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_FUN;
-  v->fun = func;
+  v->builtin = func;
+  return v;
+}
+
+lval *lval_lambda(lval *formals, lval *body) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_FUN;
+  v->builtin = NULL;
+  v->env = lenv_new();
+  v->formals = formals;
+  v->body = body;
   return v;
 }
 
@@ -78,9 +89,16 @@ lval *lval_copy(lval *v) {
   x->type = v->type;
 
   switch (v->type) {
-  /* Copy Functions and Numbers Directly */
+    /* Copy Functions and Numbers Directly */
   case LVAL_FUN:
-    x->fun = v->fun;
+    if (v->builtin) {
+      x->builtin = v->builtin;
+    } else {
+      x->builtin = NULL;
+      x->env = lenv_copy(v->env);
+      x->formals = lval_copy(v->formals);
+      x->body = lval_copy(v->body);
+    }
     break;
   case LVAL_NUM:
     x->num = v->num;
@@ -113,6 +131,11 @@ void lval_del(lval *v) {
   /* Do nothing special for number&function type */
   case LVAL_NUM:
   case LVAL_FUN:
+    if (!v->builtin) {
+      lenv_del(v->env);
+      lval_del(v->formals);
+      lval_del(v->body);
+    }
     break;
   /* For Err or Sym free the string data */
   case LVAL_ERR:

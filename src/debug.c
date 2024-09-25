@@ -29,10 +29,8 @@ char *ltype_name(int t) {
 void lval_expr_print(lenv *e, lval *v, char open, char close) {
   putchar(open);
   for (int i = 0; i < v->count; i++) {
-
     /* Print Value contained within */
     lval_print(e, v->cell[i]);
-
     /* Don't print trailing space if last element */
     if (i != (v->count - 1)) {
       putchar(' ');
@@ -59,7 +57,15 @@ void lval_print(lenv *e, lval *v) {
     lval_expr_print(e, v, '{', '}');
     break;
   case LVAL_FUN:
-    printf("<function-%s>", lenv_get_fun_name(e, v));
+    if (v->builtin) {
+      printf("<builtin-%s>", lenv_get_builtin_name(e, v));
+    } else {
+      printf("(\\ ");
+      lval_print(e, v->formals);
+      putchar(' ');
+      lval_print(e, v->body);
+      putchar(')');
+    }
     break;
   }
 }
@@ -70,8 +76,11 @@ void lval_println(lenv *e, lval *v) {
 }
 
 void lenv_print(lenv *e) {
-  for (int i = 0; i < e->count; i++) {
-    printf("%s: ", e->syms[i]);
-    lval_println(e, e->vals[i]);
+  while (e) {
+    for (int i = 0; i < e->count; i++) {
+      printf("%s: ", e->syms[i]);
+      lval_println(e, e->vals[i]);
+    }
+    e = e->par;
   }
 }
