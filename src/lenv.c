@@ -135,6 +135,14 @@ void lenv_add_builtins(lenv *e) {
       {"-", builtin_sub},
       {"*", builtin_mul},
       {"/", builtin_div},
+      /* Comparison Functions */
+      {"if", builtin_if},
+      {"==", builtin_eq},
+      {"!=", builtin_ne},
+      {">", builtin_gt},
+      {"<", builtin_lt},
+      {">=", builtin_ge},
+      {"<=", builtin_le},
   };
   const int builtin_count = (sizeof builtins) / (sizeof builtins[0]);
   for (int i = 0; i < builtin_count; i++) {

@@ -84,6 +84,17 @@ lval *lval_lambda(lval *formals, lval *body) {
   return v;
 }
 
+lval *lval_join(lval *x, lval *y) {
+  /* For each cell in 'y' add it to 'x' */
+  while (y->count) {
+    x = lval_add(x, lval_pop(y, 0));
+  }
+
+  /* Delete the empty 'y' and return 'x' */
+  lval_del(y);
+  return x;
+}
+
 lval *lval_copy(lval *v) {
   lval *x = malloc(sizeof(lval));
   x->type = v->type;
@@ -126,16 +137,51 @@ lval *lval_copy(lval *v) {
   return x;
 }
 
+int lval_eq(lval *x, lval *y) {
+  /* Different Types are always unequal */
+  if (x->type != y->type) {
+    return 0;
+  }
+  /* Compare Based upon type */
+  switch (x->type) {
+  /* Compare Number Value */
+  case LVAL_NUM:
+    return (x->num == y->num);
+  /* Compare String Values */
+  case LVAL_ERR:
+    return (strcmp(x->err, y->err) == 0);
+  case LVAL_SYM:
+    return (strcmp(x->sym, y->sym) == 0);
+  /* If builtin compare, otherwise compare formals and body */
+  case LVAL_FUN:
+    if (x->builtin || y->builtin) {
+      return x->builtin == y->builtin;
+    } else {
+      return lval_eq(x->formals, y->formals) && lval_eq(x->body, y->body);
+    }
+  /* If list compare every individual element */
+  case LVAL_QEXPR:
+  case LVAL_SEXPR:
+    if (x->count != y->count) {
+      return 0;
+    }
+    for (int i = 0; i < x->count; i++) {
+      /* If any element not equal then whole list not equal */
+      if (!lval_eq(x->cell[i], y->cell[i])) {
+        return 0;
+      }
+    }
+    /* Otherwise lists must be equal */
+    return 1;
+    break;
+  }
+  return 0;
+}
+
 void lval_del(lval *v) {
   switch (v->type) {
-  /* Do nothing special for number&function type */
+  /* Do nothing special for number type */
   case LVAL_NUM:
-  case LVAL_FUN:
-    if (!v->builtin) {
-      lenv_del(v->env);
-      lval_del(v->formals);
-      lval_del(v->body);
-    }
     break;
   /* For Err or Sym free the string data */
   case LVAL_ERR:
@@ -153,7 +199,15 @@ void lval_del(lval *v) {
     /* Also free the memory allocated to contain the pointers */
     free(v->cell);
     break;
+  case LVAL_FUN:
+    if (!v->builtin) {
+      lenv_del(v->env);
+      lval_del(v->formals);
+      lval_del(v->body);
+    }
+    break;
   }
+
   /* Free the memory allocated for the "lval" struct itself */
   free(v);
 }

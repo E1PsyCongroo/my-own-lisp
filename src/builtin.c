@@ -52,17 +52,6 @@ lval *builtin_eval(lenv *e, lval *a) {
   return lval_eval(e, x);
 }
 
-lval *lval_join(lval *x, lval *y) {
-  /* For each cell in 'y' add it to 'x' */
-  while (y->count) {
-    x = lval_add(x, lval_pop(y, 0));
-  }
-
-  /* Delete the empty 'y' and return 'x' */
-  lval_del(y);
-  return x;
-}
-
 lval *builtin_join(lenv *e, lval *a) {
   for (int i = 0; i < a->count; i++) {
     LASSERT_TYPE("join", a, i, LVAL_QEXPR);
@@ -108,58 +97,6 @@ lval *builtin_init(lenv *e, lval *a) {
   lval_del(lval_pop(x, x->count - 1));
   return x;
 }
-
-lval *builtin_op(lenv *e, lval *a, char *op) {
-  /* Ensure all arguments are numbers */
-  for (int i = 0; i < a->count; i++) {
-    if (a->cell[i]->type != LVAL_NUM) {
-      lval_del(a);
-      return lval_err("Cannot operate on non-number!");
-    }
-  }
-
-  /* Pop the first element */
-  lval *x = lval_pop(a, 0);
-  /* If no arguments and sub then perform unary negation */
-  if ((strcmp(op, "-") == 0) && a->count == 0) {
-    x->num = -x->num;
-  }
-
-  /* While there are still elements remaining */
-  while (a->count > 0) {
-    /* Pop the next element */
-    lval *y = lval_pop(a, 0);
-    if (strcmp(op, "+") == 0) {
-      x->num += y->num;
-    }
-    if (strcmp(op, "-") == 0) {
-      x->num -= y->num;
-    }
-    if (strcmp(op, "*") == 0) {
-      x->num *= y->num;
-    }
-    if (strcmp(op, "/") == 0) {
-      if (y->num == 0) {
-        lval_del(x);
-        lval_del(y);
-        x = lval_err("Division By Zero!");
-        break;
-      }
-      x->num /= y->num;
-    }
-    lval_del(y);
-  }
-  lval_del(a);
-  return x;
-}
-
-lval *builtin_add(lenv *e, lval *a) { return builtin_op(e, a, "+"); }
-
-lval *builtin_sub(lenv *e, lval *a) { return builtin_op(e, a, "-"); }
-
-lval *builtin_mul(lenv *e, lval *a) { return builtin_op(e, a, "*"); }
-
-lval *builtin_div(lenv *e, lval *a) { return builtin_op(e, a, "/"); }
 
 lval *builtin_var(lenv *e, lval *a, char *func) {
   LASSERT_TYPE(func, a, 0, LVAL_QEXPR);
@@ -232,6 +169,11 @@ lval *builtin_fun(lenv *e, lval *a) {
 
   /* Pop first two arguments and pass them to lval_lambda */
   lval *formals = lval_pop(a, 0);
+  LASSERT(formals, formals->count > 1,
+          "Function '%s' passed incorrect number of symbols. "
+          "Got %i, Expected %s.",
+          "\\", formals->count, "> 1");
+
   lval *func_name = lval_add(lval_qexpr(), lval_pop(formals, 0));
   lval *body = lval_pop(a, 0);
   lval *lambda = lval_lambda(formals, body);
@@ -251,4 +193,119 @@ lval *builtin_exit(lenv *e, lval *a) {
   exit(a->num);
   lval_del(a);
   return lval_err("exit");
+}
+
+lval *builtin_op(lenv *e, lval *a, char *op) {
+  /* Ensure all arguments are numbers */
+  for (int i = 0; i < a->count; i++) {
+    if (a->cell[i]->type != LVAL_NUM) {
+      lval_del(a);
+      return lval_err("Cannot operate on non-number!");
+    }
+  }
+
+  /* Pop the first element */
+  lval *x = lval_pop(a, 0);
+  /* If no arguments and sub then perform unary negation */
+  if ((strcmp(op, "-") == 0) && a->count == 0) {
+    x->num = -x->num;
+  }
+
+  /* While there are still elements remaining */
+  while (a->count > 0) {
+    /* Pop the next element */
+    lval *y = lval_pop(a, 0);
+    if (strcmp(op, "+") == 0) {
+      x->num += y->num;
+    }
+    if (strcmp(op, "-") == 0) {
+      x->num -= y->num;
+    }
+    if (strcmp(op, "*") == 0) {
+      x->num *= y->num;
+    }
+    if (strcmp(op, "/") == 0) {
+      if (y->num == 0) {
+        lval_del(x);
+        lval_del(y);
+        x = lval_err("Division By Zero!");
+        break;
+      }
+      x->num /= y->num;
+    }
+    lval_del(y);
+  }
+  lval_del(a);
+  return x;
+}
+
+lval *builtin_add(lenv *e, lval *a) { return builtin_op(e, a, "+"); }
+lval *builtin_sub(lenv *e, lval *a) { return builtin_op(e, a, "-"); }
+lval *builtin_mul(lenv *e, lval *a) { return builtin_op(e, a, "*"); }
+lval *builtin_div(lenv *e, lval *a) { return builtin_op(e, a, "/"); }
+
+lval *builtin_ord(lenv *e, lval *a, char *op) {
+  LASSERT_NUM(op, a, 2);
+  LASSERT_TYPE(op, a, 0, LVAL_NUM);
+  LASSERT_TYPE(op, a, 1, LVAL_NUM);
+
+  int r;
+  if (strcmp(op, ">") == 0) {
+    r = (a->cell[0]->num > a->cell[1]->num);
+  }
+  if (strcmp(op, "<") == 0) {
+    r = (a->cell[0]->num < a->cell[1]->num);
+  }
+  if (strcmp(op, ">=") == 0) {
+    r = (a->cell[0]->num >= a->cell[1]->num);
+  }
+  if (strcmp(op, "<=") == 0) {
+    r = (a->cell[0]->num <= a->cell[1]->num);
+  }
+  lval_del(a);
+  return lval_num(r);
+}
+
+lval *builtin_gt(lenv *e, lval *a) { return builtin_ord(e, a, ">"); }
+lval *builtin_lt(lenv *e, lval *a) { return builtin_ord(e, a, "<"); }
+lval *builtin_ge(lenv *e, lval *a) { return builtin_ord(e, a, ">="); }
+lval *builtin_le(lenv *e, lval *a) { return builtin_ord(e, a, "<="); }
+
+lval *builtin_cmp(lenv *e, lval *a, char *op) {
+  LASSERT_NUM(op, a, 2);
+  int r;
+  if (strcmp(op, "==") == 0) {
+    r = lval_eq(a->cell[0], a->cell[1]);
+  }
+  if (strcmp(op, "!=") == 0) {
+    r = !lval_eq(a->cell[0], a->cell[1]);
+  }
+  lval_del(a);
+  return lval_num(r);
+}
+lval *builtin_eq(lenv *e, lval *a) { return builtin_cmp(e, a, "=="); }
+lval *builtin_ne(lenv *e, lval *a) { return builtin_cmp(e, a, "!="); }
+
+lval *builtin_if(lenv *e, lval *a) {
+  LASSERT_NUM("if", a, 3);
+  LASSERT_TYPE("if", a, 0, LVAL_NUM);
+  LASSERT_TYPE("if", a, 1, LVAL_QEXPR);
+  LASSERT_TYPE("if", a, 2, LVAL_QEXPR);
+
+  /* Mark Both Expressions as evaluable */
+  lval *x;
+  a->cell[1]->type = LVAL_SEXPR;
+  a->cell[2]->type = LVAL_SEXPR;
+
+  if (a->cell[0]->num) {
+    /* If condition is true evaluate first expression */
+    x = lval_eval(e, lval_pop(a, 1));
+  } else {
+    /* Otherwise evaluate second expression */
+    x = lval_eval(e, lval_pop(a, 2));
+  }
+
+  /* Delete argument list and return */
+  lval_del(a);
+  return x;
 }

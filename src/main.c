@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
 
     mpc_result_t r;
     if (mpc_parse("<stdin>", input, Lispy, &r)) {
-      mpc_ast_print(r.output);
+      // mpc_ast_print(r.output);
       lval *x = lval_eval(e, lval_read(r.output));
-      lenv_print(e);
+      // lenv_print(e);
       lval_println(e, x);
       lval_del(x);
       mpc_ast_delete(r.output);
