@@ -40,6 +40,14 @@ lval *lval_sym(char *s) {
   return v;
 }
 
+lval *lval_str(char *s) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_STR;
+  v->str = malloc(strlen(s) + 1);
+  strcpy(v->str, s);
+  return v;
+}
+
 lval *lval_sexpr(void) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_SEXPR;
@@ -108,6 +116,10 @@ lval *lval_copy(lval *v) {
     x->sym = malloc(strlen(v->sym) + 1);
     strcpy(x->sym, v->sym);
     break;
+  case LVAL_STR:
+    x->str = malloc(strlen(v->str) + 1);
+    strcpy(x->str, v->str);
+    break;
   case LVAL_SEXPR:
   case LVAL_QEXPR:
     x->count = v->count;
@@ -132,6 +144,8 @@ int lval_eq(lval *x, lval *y) {
     return (strcmp(x->err, y->err) == 0);
   case LVAL_SYM:
     return (strcmp(x->sym, y->sym) == 0);
+  case LVAL_STR:
+    return (strcmp(x->str, y->str) == 0);
   case LVAL_FUN:
     if (x->builtin || y->builtin) {
       return x->builtin == y->builtin;
@@ -164,6 +178,9 @@ void lval_del(lval *v) {
   case LVAL_SYM:
     free(v->sym);
     break;
+  case LVAL_STR:
+    free(v->str);
+    break;
   case LVAL_SEXPR:
   case LVAL_QEXPR:
     for (int i = 0; i < v->count; i++) {
@@ -187,6 +204,16 @@ lval *lval_read_num(mpc_ast_t *t) {
   errno = 0;
   long x = strtol(t->contents, NULL, 10);
   return errno != ERANGE ? lval_num(x) : lval_err("invalid number");
+}
+
+lval *lval_read_str(mpc_ast_t *t) {
+  t->contents[strlen(t->contents) - 1] = '\0';
+  char *unescaped = malloc(strlen(t->contents + 1) + 1);
+  strcpy(unescaped, t->contents + 1);
+  unescaped = mpcf_unescape(unescaped);
+  lval *str = lval_str(unescaped);
+  free(unescaped);
+  return str;
 }
 
 lval *lval_add(lval *v, lval *x) {
@@ -213,6 +240,9 @@ lval *lval_read(mpc_ast_t *t) {
   if (strstr(t->tag, "symbol")) {
     return lval_sym(t->contents);
   }
+  if (strstr(t->tag, "string")) {
+    return lval_read_str(t);
+  }
 
   lval *x = NULL;
   if (strcmp(t->tag, ">") == 0) {
@@ -225,6 +255,9 @@ lval *lval_read(mpc_ast_t *t) {
     x = lval_qexpr();
   }
   for (int i = 1; i < t->children_num - 1; i++) {
+    if (strstr(t->children[i]->tag, "comment")) {
+      continue;
+    }
     x = lval_add(x, lval_read(t->children[i]));
   }
   return x;

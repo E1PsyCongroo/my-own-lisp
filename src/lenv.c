@@ -27,23 +27,6 @@ void lenv_del(lenv *e) {
   free(e);
 }
 
-char *lenv_get_builtin_name(lenv *e, lval *k) {
-  while (e->par) {
-    e = e->par;
-  }
-
-  if (k->type == LVAL_FUN && k->builtin) {
-    for (int i = 0; i < e->count; i++) {
-      if (e->vals[i]->type == LVAL_FUN && e->vals[i]->builtin == k->builtin) {
-        return e->syms[i];
-      }
-    }
-  } else {
-    return "not builtin function";
-  }
-  return "unknown";
-}
-
 lval *lenv_get(lenv *e, lval *k) {
   for (int i = 0; i < e->count; i++) {
     if (strcmp(e->syms[i], k->sym) == 0) {
@@ -124,6 +107,9 @@ void lenv_add_builtins(lenv *e) {
       {"\\", builtin_lambda},
       {"fun", builtin_fun},
       {"exit", builtin_exit},
+      {"load", builtin_load},
+      {"print", builtin_print},
+      {"error", builtin_error},
       /* Mathematical Functions */
       {"+", builtin_add},
       {"-", builtin_sub},

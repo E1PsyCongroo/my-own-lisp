@@ -12,10 +12,10 @@
 /*
  * LASSERT 宏 - 用于断言检查并在失败时释放资源并返回错误。
  * 参数：
- * args - 传入的 lval 参数列表，将在断言失败时被释放。
- * cond - 断言检查的条件。
- * fmt - 如果断言失败，用于格式化错误消息的格式字符串。
- * ... - 用于 fmt 字符串的可变参数列表。
+ * `args` - 传入的 lval 参数列表，将在断言失败时被释放。
+ * `cond` - 断言检查的条件。
+ * `fmt` - 如果断言失败，用于格式化错误消息的格式字符串。
+ * `...` - 用于 fmt 字符串的可变参数列表。
  * 用法示例：LASSERT(args, args->count == 2, "Expected two arguments.");
  * 如果 cond 为假，则释放 args 并返回一个格式化的错误 lval。
  *
@@ -71,6 +71,13 @@ lval *lval_err(char *fmt, ...);
  * "调用者"负责使用 `lval_del` 释放返回的 lval。
  */
 lval *lval_sym(char *s);
+/*
+ * 创建一个新的字符串类型的 lval。
+ * 参数 `s`: 字符串。
+ * 返回: 指向新创建的 lval 的指针。
+ * "调用者"负责使用 `lval_del` 释放返回的 lval。
+ */
+lval *lval_str(char *s);
 /*
  * 创建一个新的空 S表达式类型的 lval。
  * 返回: 指向新创建的 lval 的指针。
@@ -132,6 +139,13 @@ int lval_eq(lval *x, lval *y);
  * "调用者"负责使用 `lval_del` 释放返回的 lval。
  */
 lval *lval_read_num(mpc_ast_t *t);
+/*
+ * 从抽象语法树节点中读取一个字符串，并封装成 LVAL_STR 类型的 lval。
+ * 参数 `t`: 指向 mpc_ast_t 结构的指针，代表抽象语法树节点。
+ * 返回: 指向新创建的 lval 的指针。
+ * "调用者"负责使用 `lval_del` 释放返回的 lval。
+ */
+lval *lval_read_str(mpc_ast_t *t);
 /*
  * 将一个 lval 添加到另一个 LVAL_SEPXR | LVAL_QEXPR 类型的 lval 的末尾。
  * 参数 `v`: 指向要添加元素的 lval 的指针。
@@ -342,6 +356,9 @@ lval *builtin_not(lenv *e, lval *a);
  * "调用者"负责使用 `lval_del` 释放返回的 lval。
  */
 lval *builtin_if(lenv *e, lval *a);
+lval *builtin_load(lenv *e, lval *a);
+lval *builtin_print(lenv *e, lval *a);
+lval *builtin_error(lenv *e, lval *a);
 
 /*
  * 从 lval 中移除并返回指定位置的元素，不删除其余元素。
@@ -390,14 +407,19 @@ lval *lval_eval_sexpr(lenv *e, lval *v);
  */
 char *ltype_name(int t);
 /*
+ * 打印 lval 字符串。
+ * 参数 `v`: 指向要打印的 lval 字符串的指针。
+ * 使用转义字符（例如`\n`来表示新行）。
+ */
+void lval_print_str(lval *v);
+/*
  * 打印 lval 表达式，根据指定的开闭字符封装表达式。
- * 参数 `e`: 指向当前 lisp 环境的指针，用于可能的环境依赖的打印操作。
  * 参数 `v`: 指向要打印的 lval 表达式的指针。
  * 参数 `open`: 表达式开始的字符，如 '(' 或 '{'。
  * 参数 `close`: 表达式结束的字符，如 ')' 或 '}'。
  * 说明: 该函数递归调用 lval_print 来打印 v
  * 内部的每个元素，元素之间用空格分隔，最后不带额外空格。
  */
-void lval_expr_print(lenv *e, lval *v, char open, char close);
+void lval_expr_print(lval *v, char open, char close);
 
 #endif

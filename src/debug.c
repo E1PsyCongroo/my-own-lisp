@@ -17,6 +17,8 @@ char *ltype_name(int t) {
     return "Error";
   case LVAL_SYM:
     return "Symbol";
+  case LVAL_STR:
+    return "String";
   case LVAL_SEXPR:
     return "S-Expression";
   case LVAL_QEXPR:
@@ -26,10 +28,18 @@ char *ltype_name(int t) {
   }
 }
 
-void lval_expr_print(lenv *e, lval *v, char open, char close) {
+void lval_print_str(lval *v) {
+  char *escaped = malloc(strlen(v->str) + 1);
+  strcpy(escaped, v->str);
+  escaped = mpcf_escape(escaped);
+  printf("\"%s\"", escaped);
+  free(escaped);
+}
+
+void lval_expr_print(lval *v, char open, char close) {
   putchar(open);
   for (int i = 0; i < v->count; i++) {
-    lval_print(e, v->cell[i]);
+    lval_print(v->cell[i]);
     if (i != (v->count - 1)) {
       putchar(' ');
     }
@@ -37,7 +47,7 @@ void lval_expr_print(lenv *e, lval *v, char open, char close) {
   putchar(close);
 }
 
-void lval_print(lenv *e, lval *v) {
+void lval_print(lval *v) {
   switch (v->type) {
   case LVAL_NUM:
     printf("%li", v->num);
@@ -48,28 +58,31 @@ void lval_print(lenv *e, lval *v) {
   case LVAL_SYM:
     printf("%s", v->sym);
     break;
+  case LVAL_STR:
+    lval_print_str(v);
+    break;
   case LVAL_SEXPR:
-    lval_expr_print(e, v, '(', ')');
+    lval_expr_print(v, '(', ')');
     break;
   case LVAL_QEXPR:
-    lval_expr_print(e, v, '{', '}');
+    lval_expr_print(v, '{', '}');
     break;
   case LVAL_FUN:
     if (v->builtin) {
-      printf("<builtin-%s>", lenv_get_builtin_name(e, v));
+      printf("<builtin>");
     } else {
       printf("(\\ ");
-      lval_print(e, v->formals);
+      lval_print(v->formals);
       putchar(' ');
-      lval_print(e, v->body);
+      lval_print(v->body);
       putchar(')');
     }
     break;
   }
 }
 
-void lval_println(lenv *e, lval *v) {
-  lval_print(e, v);
+void lval_println(lval *v) {
+  lval_print(v);
   putchar('\n');
 }
 
@@ -77,7 +90,7 @@ void lenv_print(lenv *e) {
   while (e) {
     for (int i = 0; i < e->count; i++) {
       printf("%s: ", e->syms[i]);
-      lval_println(e, e->vals[i]);
+      lval_println(e->vals[i]);
     }
     e = e->par;
   }

@@ -309,3 +309,61 @@ lval *builtin_if(lenv *e, lval *a) {
   lval_del(a);
   return x;
 }
+
+lval *builtin_load(lenv *e, lval *a) {
+  LASSERT_NUM("load", a, 1);
+  LASSERT_TYPE("load", a, 0, LVAL_STR);
+
+  mpc_result_t r;
+  if (mpc_parse_contents(a->cell[0]->str, Lispy, &r)) {
+
+    lval *expr = lval_read(r.output);
+    mpc_ast_delete(r.output);
+
+    while (expr->count) {
+      lval *x = lval_eval(e, lval_pop(expr, 0));
+      /* If Evaluation leads to error print it */
+      if (x->type == LVAL_ERR) {
+        lval_println(x);
+      }
+      lval_del(x);
+    }
+
+    lval_del(expr);
+    lval_del(a);
+
+    return lval_sexpr();
+
+  } else {
+    char *err_msg = mpc_err_string(r.error);
+    mpc_err_delete(r.error);
+
+    lval *err = lval_err("Could not load Library %s", err_msg);
+    free(err_msg);
+    lval_del(a);
+
+    return err;
+  }
+}
+
+lval *builtin_print(lenv *e, lval *a) {
+  for (int i = 0; i < a->count; i++) {
+    lval_print(a->cell[i]);
+    putchar(' ');
+  }
+
+  putchar('\n');
+  lval_del(a);
+
+  return lval_sexpr();
+}
+
+lval *builtin_error(lenv *e, lval *a) {
+  LASSERT_NUM("error", a, 1);
+  LASSERT_TYPE("error", a, 0, LVAL_STR);
+
+  lval *err = lval_err(a->cell[0]->str);
+
+  lval_del(a);
+  return err;
+}

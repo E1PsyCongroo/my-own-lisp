@@ -6,6 +6,8 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+#include <mpc.h>
+
 /*
  * 前向声明
  * 如果你不清楚前向声明的作用，STFW & RTFM
@@ -13,16 +15,34 @@
 typedef struct lval lval;
 typedef struct lenv lenv;
 
+extern mpc_parser_t *Number;
+extern mpc_parser_t *Symbol;
+extern mpc_parser_t *String;
+extern mpc_parser_t *Comment;
+extern mpc_parser_t *Sexpr;
+extern mpc_parser_t *Qexpr;
+extern mpc_parser_t *Expr;
+extern mpc_parser_t *Lispy;
+
 /*
  * 定义 lisp 值的可能类型的枚举常量。
  * LVAL_ERR: 错误类型。
  * LVAL_NUM: 数值类型。
  * LVAL_SYM: 符号类型。
+ * LVAL_STR: 字符串类型。
  * LVAL_FUN: 函数类型。
  * LVAL_SEXPR: S表达式类型。
  * LVAL_QEXPR: Q表达式类型。
  */
-enum { LVAL_ERR, LVAL_NUM, LVAL_SYM, LVAL_FUN, LVAL_SEXPR, LVAL_QEXPR };
+enum {
+  LVAL_ERR,
+  LVAL_NUM,
+  LVAL_SYM,
+  LVAL_STR,
+  LVAL_FUN,
+  LVAL_SEXPR,
+  LVAL_QEXPR
+};
 
 /*
  * 声明 lbuiltin 类型，指向 lisp 内置函数的函数指针。
@@ -37,6 +57,7 @@ typedef lval *(*lbuiltin)(lenv *, lval *);
  * - type == LVAL_ERR: 使用 err 存储错误信息。
  * - type == LVAL_NUM: 使用 num 存储数值。
  * - type == LVAL_SYM: 使用 sym 存储符号。
+ * - type == LVAL_STR: 使用 str 存储字符串。
  * - type == LVAL_SEXPR 或 LVAL_QEXPR: 使用 cell 数组存储表达式。
  * - type == LVAL_FUN:
  *   - 如果 builtin 不为 NULL，表示为内置函数。
@@ -49,6 +70,7 @@ typedef struct lval {
     long num;
     char *err;
     char *sym;
+    char *str;
     struct {
       int count;
       struct lval **cell;

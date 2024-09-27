@@ -10,15 +10,6 @@
 #include <mpc.h>
 
 /*
- * 根据 lval `k` 从全局环境中获取内置函数的名称。
- * 此函数用于实现 lval_print 相关的功能
- * 返回值：
- *  - 如果 `k` 不是内置函数，则返回 "not builtin function"（非内置函数）。
- *  - 如果 `k` 是内置函数类型但在环境中无法找到，则返回 "unknown"（未知），
- *    可能指示实现错误。
- */
-char *lenv_get_builtin_name(lenv *e, lval *k);
-/*
  * 从环境 `e` 或其父环境中获取符号 `k` 的值。
  * 如果找不到符号 `k`，返回 LVAL_ERR。
  * "调用方"负责使用 `lval_del` 释放返回的值。

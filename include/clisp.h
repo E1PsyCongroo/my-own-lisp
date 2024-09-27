@@ -8,10 +8,18 @@
 
 /*
  * 对 lenv 和 lval 结构进行前向声明。
- * 这里不展示 lenv 和 lval 的具体结构细节，实现抽象化。
+ * 这里不展示 lenv 和 lval 的具体结构细节，以实现抽象化。
  */
 typedef struct lenv lenv;
 typedef struct lval lval;
+
+void parser_init(void);
+int parse_line(const char *line, mpc_result_t *r);
+void parse_print(mpc_result_t *r);
+void parse_delete(mpc_result_t *r);
+void parse_error(mpc_result_t *r);
+void parse_args(int argc, char **argv, lenv *e);
+void parser_quit(void);
 
 /*
  * 创建一个新的 lisp 环境。
@@ -57,10 +65,10 @@ void lenv_print(lenv *e);
 /*
  * 打印 lisp 值
  */
-void lval_print(lenv *e, lval *v);
+void lval_print(lval *v);
 /*
  * 打印 lisp 值，并在最后添加换行。
  */
-void lval_println(lenv *e, lval *v);
+void lval_println(lval *v);
 
 #endif
